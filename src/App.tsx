@@ -26,7 +26,6 @@ export default function App() {
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [autoEngageEnabled, setAutoEngageEnabled] = useState(false);
 
-  // Initialize data
   useEffect(() => {
     async function loadInitialData() {
       setIsAiGenerating(true);
@@ -43,13 +42,50 @@ export default function App() {
       }
     }
     loadInitialData();
+
+    // Listen for OAuth success message from the popup
+    const handleMessage = (event: MessageEvent) => {
+      // Allow messages from our own domain (handling both dev and cross-origin scenarios)
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost') && origin !== window.location.origin) {
+        return;
+      }
+      
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        console.log("Instagram authentication successful", event.data.code);
+        setInstagramConnected(true);
+        // Normally, you would now fetch the user's Instagram profile
+      }
+      if (event.data?.type === 'OAUTH_AUTH_ERROR') {
+        alert('Instagram Authentication Failed: ' + event.data.error);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const handleConnectInstagram = () => {
-    // Mock OAuth flow
-    setTimeout(() => {
-      setInstagramConnected(true);
-    }, 1000);
+  const handleConnectInstagram = async () => {
+    try {
+      const response = await fetch('/api/auth/url');
+      if (!response.ok) {
+        throw new Error('Failed to get auth URL');
+      }
+      const { url } = await response.json();
+
+      const authWindow = window.open(
+        url,
+        'oauth_popup',
+        'width=600,height=700'
+      );
+
+      if (!authWindow) {
+        alert('Please allow popups for this site to connect your Instagram account.');
+      }
+    } catch (error) {
+      console.error('OAuth error:', error);
+      alert('Failed to initialize Instagram connection.');
+    }
   };
 
   const handleGenerateNewContent = async () => {

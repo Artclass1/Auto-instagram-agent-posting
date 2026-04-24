@@ -36,9 +36,17 @@ Return ONLY a valid JSON array of objects. Each object must have exactly these k
     });
 
     let jsonText = response.text.trim();
-    if (jsonText.startsWith('```json')) jsonText = jsonText.replace(/^```json/, '');
-    if (jsonText.startsWith('```')) jsonText = jsonText.replace(/^```/, '');
-    if (jsonText.endsWith('```')) jsonText = jsonText.replace(/```$/, '');
+    if (jsonText.startsWith('```json')) jsonText = jsonText.replace(/^```json\n?/, '');
+    if (jsonText.startsWith('```')) jsonText = jsonText.replace(/^```\n?/, '');
+    if (jsonText.endsWith('```')) jsonText = jsonText.replace(/\n?```$/, '');
+    
+    // Find first '[' and last ']'
+    const startIndex = jsonText.indexOf('[');
+    const endIndex = jsonText.lastIndexOf(']');
+    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+      jsonText = jsonText.substring(startIndex, endIndex + 1);
+    }
+    
     jsonText = jsonText.trim();
     const data = JSON.parse(jsonText);
     
@@ -79,9 +87,17 @@ Provide ONLY a valid JSON array of 3 strings.
     });
 
     let jsonText = response.text.trim();
-    if (jsonText.startsWith('```json')) jsonText = jsonText.replace(/^```json/, '');
-    if (jsonText.startsWith('```')) jsonText = jsonText.replace(/^```/, '');
-    if (jsonText.endsWith('```')) jsonText = jsonText.replace(/```$/, '');
+    if (jsonText.startsWith('```json')) jsonText = jsonText.replace(/^```json\n?/, '');
+    if (jsonText.startsWith('```')) jsonText = jsonText.replace(/^```\n?/, '');
+    if (jsonText.endsWith('```')) jsonText = jsonText.replace(/\n?```$/, '');
+    
+    // Find first '[' and last ']'
+    const startIndex = jsonText.indexOf('[');
+    const endIndex = jsonText.lastIndexOf(']');
+    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+      jsonText = jsonText.substring(startIndex, endIndex + 1);
+    }
+    
     jsonText = jsonText.trim();
     
     return JSON.parse(jsonText);
